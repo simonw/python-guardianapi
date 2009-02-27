@@ -1,0 +1,76 @@
+{
+    "base_url": "http://codresapi01.gudev.gnl:8300/",
+    "endpoints": {
+        "search": {
+            "name": "Search",
+            "description": "Search our archive",
+            "url": "/gdn-api/search",
+            "results": "$.search.results",
+            "params": {
+                "q": {
+                    "required": false,
+                    "description": "A string to search for, if omitted all content is returned"
+                },
+                "after": {
+                    "required": false,
+                    "description": "Returns only content published after this date. The date is formatted YYYYMMDD"
+                },
+                "before": {
+                    "required": false,
+                    "description": "Returns only content published before this date. The date is formatted YYYYMMDD"
+                },
+                "content-type": {
+                    "required": false,
+                    "description": "The type of content to return e.g article, audio, gallery, poll etc."
+                },
+                "count": {
+                    "required": false,
+                    "description": "Specifies how many items to return as part of this query, if omitted 10 results will be returned"
+                },
+                "start-index": {
+                    "required": false,
+                    "description": "Allows pagination through results by specifying which result to start from"
+                },
+                "and-filter": {
+                    "required": false,
+                    "description": "Returns only results that match the given subject filter(s). Multiple subject filters can be applied. Valid values can be obtained using the all-subjects endpoint."
+                },
+                "orderbydate": {
+                    "required": false,
+                    "description": "Returns the results in date order, rather than relevance order. Takes an optional value of desc, which reverses the order."
+                }
+            }
+        },
+        "subjects": {
+            "name": "Search for subjects",
+            "description": "Search for subjects within the API",
+            "url": "/gdn-api/all-subjects",
+            "params": {
+                "q": {
+                    "required": false,
+                    "description": "A string to search for, if omitted all subjects are returned"
+                },
+                "count": {
+                    "required": false,
+                    "description": "Specifies how many items to return as part of this query, if omitted 10 results will be returned"
+                },
+                "start-index": {
+                    "required": false,
+                    "description": "Allows pagination through results by specifying which result to start from"
+                }
+            }
+        },
+        "content": {
+            "name": "content item",
+            "description": "Returns the full details of an individual item of content. Every content item listed in the search results provides the url at which to get the individual content item.",
+            "url": "/gdn-api/content/[content-path]",
+            "params": {
+                "content-path": {
+                    "required": true,
+                    "description": "Path for the item",
+                    "param-type": "url"
+                }
+            }
+        }
+    }
+}
