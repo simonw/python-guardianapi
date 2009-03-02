@@ -7,11 +7,11 @@ class AttrDictList(list):
             return AttrDictList(value)
         else:
             return value
-
+    
     def __getitem__(self, index):
         value = super(AttrDictList, self).__getitem__(index)
         return self.transform(value)
-
+    
     def __iter__(self):
         for value in super(AttrDictList, self).__iter__():
             yield self.transform(value)

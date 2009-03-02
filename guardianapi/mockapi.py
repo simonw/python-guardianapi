@@ -25,19 +25,24 @@ class MockFetcher(Fetcher):
         method = getattr(self, 'do_%s' % endpoint.replace('-', '_'))
         json = method(**args)
         
-        self.fetched.append((url, args))
+        self.record(url, args)
+        
         return {}, simplejson.dumps(json, indent=4)
     
+    def record(self, url, args):
+        "Record attempted URL fetches so we can run assertions against them"
+        self.fetched.append((url, args))
+    
     def do_search(self, **kwargs):
-        startIndex = kwargs.get('startIndex', 0)
-        per_page = 20
+        start_index = kwargs.get('start-index', 0)
+        count = kwargs.get('count', 20)
         return {
             "search": {
                 "count": 101,
-                "startIndex": startIndex,
+                "startIndex": start_index,
                 "results": [
                     self.fake_article(article_id) 
-                    for article_id in range(startIndex, startIndex + per_page)
+                    for article_id in range(start_index, start_index + count)
                 ],
                 "filters": [{
                     "name": "Article",
