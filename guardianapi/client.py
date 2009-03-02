@@ -74,6 +74,9 @@ class Results(object):
     def start_index(self):
         return 0
     
+    def per_page(self):
+        return self.kwargs.get('count', self.default_per_page)
+    
     def __getitem__(self, key):
         return self.json[key]
     
@@ -81,9 +84,7 @@ class Results(object):
         return []
     
     def has_next(self):
-        max_index = self.count() - 1
-        max_in_current = self.start_index() + len(self.results())
-        return max_in_current < max_index
+        return self.start_index() + self.per_page() < self.count()
     
     def next(self):
         "Return next Results object in pagination sequence, or None if at end"

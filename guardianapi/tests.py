@@ -51,6 +51,7 @@ class SearchTestCase(unittest.TestCase):
                 self._total_results = total_results
                 self._start_index = start_index
                 self._per_page = per_page
+                self.kwargs = {'count': per_page, 'start_index': start_index}
             
             def count(self):
                 return self._total_results

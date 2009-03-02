@@ -32,14 +32,13 @@ class MockFetcher(Fetcher):
     
     def record(self, url, args, json):
         "Record attempted URL fetches so we can run assertions against them"
-        print '     ', url
-        print '     ', args
-        try:
-            print '      Got %s results' % len(json['search']['results'])
-        except KeyError:
-            pass
-        
         self.fetched.append((url, args))
+        # print '     ', url
+        # print '     ', args
+        # try:
+        #     print '      Got %s results' % len(json['search']['results'])
+        # except KeyError:
+        #     pass
     
     def do_search(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
@@ -47,7 +46,7 @@ class MockFetcher(Fetcher):
         
         # How many results should we return?
         num_results = min(
-            self.fake_total_results - (start_index + count), count
+            self.fake_total_results - start_index, count
         )
         
         return {
