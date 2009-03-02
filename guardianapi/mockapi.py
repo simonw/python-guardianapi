@@ -16,17 +16,24 @@ class MockFetcher(Fetcher):
     def get(self, url):
         bits = urlparse.urlparse(url)
         endpoint = bits.path.split('/')[-1]
+        args = tuple()
+        if endpoint not in ('search', 'all-subjects'):
+            if bits.path.startswith('/content/content'):
+                args = (endpoint,)
+                endpoint = 'content'
+            else:
+                assert False, 'Unrecognised URL: %s' % url
         
-        args = cgi.parse_qs(bits.query)
+        kwargs = cgi.parse_qs(bits.query)
         # foo=bar becomes {'foo': ['bar']} - collapse single values
-        for key in args:
-            if isinstance(args[key], list) and len(args[key]) == 1:
-                args[key] = args[key][0]
+        for key in kwargs:
+            if isinstance(kwargs[key], list) and len(kwargs[key]) == 1:
+                kwargs[key] = kwargs[key][0]
         
         method = getattr(self, 'do_%s' % endpoint.replace('-', '_'))
-        json = method(**args)
+        json = method(*args, **kwargs)
         
-        self.record(url, args, json)
+        self.record(url, kwargs, json)
         
         return {}, simplejson.dumps(json, indent=4)
     

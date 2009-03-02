@@ -2,7 +2,7 @@ try:
     import simplejson
 except ImportError:
     from django.utils import simplejson
-import urllib, urlparse, time, re
+import urllib, urlparse, time, re, cgi
 import fetchers
 
 class APIKeyError(Exception):
@@ -13,13 +13,20 @@ class APIKeyError(Exception):
     def __repr__(self):
         return '<APIKeyError: %s is a bad API key>' % self.api_key
 
+class URLNotRecognised(Exception):
+    def __init__(self, url):
+        self.url = url
+    
+    def __repr__(self):
+        return '<URLNotRecognised: %s>' % self.url
+
 class Client(object):
     base_url = 'http://api.guardianapis.com/'
     # Map paths (e.g. /content/search) to their corresponding methods:
     path_method_lookup = (
         (re.compile('^/content/search$'), 'search'),
         (re.compile('^/content/all-subjects$'), 'tags'),
-        (re.compile('^/content/(\d+)$'), 'content'),
+        (re.compile('^/content/content/(\d+)$'), 'content'),
     )
     
     def __init__(self, api_key, fetcher=None):
@@ -63,7 +70,19 @@ class Client(object):
     
     def request(self, url):
         "Execute a method where the URL is already constructed e.g. a gdnUrl"
-        return url
+        bits = urlparse.urlparse(url)
+        path = bits.path
+        kwargs = cgi.parse_qs(bits.query)
+        found_method = None
+        args = tuple()
+        for r, method in self.path_method_lookup:
+            m = r.match(path)
+            if m:
+                found_method = method
+                args = m.groups()
+        if not found_method:
+            raise URLNotRecognised(url)
+        return getattr(self, found_method)(*args, **kwargs)
 
 class Results(object):
     client_method = None

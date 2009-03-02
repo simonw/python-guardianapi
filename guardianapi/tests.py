@@ -123,6 +123,7 @@ class ClientTestCase(BaseTestCase):
         url = 'http://gdn/content/search?q=obama'
         self.assertRequestCount(0)
         results = self.client.request(url)
+        self.assertEqual(results.kwargs['q'][0], 'obama')
         self.assertRequestCount(1)
         self.assert_(isinstance(results, client.SearchResults))
     
@@ -133,6 +134,7 @@ class ClientTestCase(BaseTestCase):
         results = self.client.request(url)
         self.assertRequestCount(1)
         self.assert_(isinstance(results, dict))
+        self.assertEqual(results['id'], '123')
 
 if __name__ == '__main__':
     unittest.main()
