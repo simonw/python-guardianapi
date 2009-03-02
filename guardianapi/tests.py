@@ -92,8 +92,8 @@ class SearchTestCase(unittest.TestCase):
         self.assertEqual(len(results.results()), 20)
         self.assert_(isinstance(results.filters(), list))
     
-    def test_all_results(self):
-        "results.all() should magically paginate"
+    def test_all_search(self):
+        "search().all() should magically paginate"
         self.fetcher.fake_total_results = 101
         self.assertRequestCount(0)
         results = self.client.search(q = 'foo', count = 30)
@@ -102,6 +102,17 @@ class SearchTestCase(unittest.TestCase):
         all_results = list(results.all(sleep = 0))
         self.assertRequestCount(4)
         self.assertEqual(len(all_results), 101)
-
+    
+    def test_all_tags(self):
+        "tags().all() should magically paginate"
+        self.fetcher.fake_total_results = 301
+        self.assertRequestCount(0)
+        results = self.client.tags(count = 100)
+        self.assertRequestCount(1)
+        self.assertEqual(len(results.results()), 100)
+        all_tags = list(results.all(sleep = 0))
+        self.assertRequestCount(4)
+        self.assertEqual(len(all_tags), 301)
+        
 if __name__ == '__main__':
     unittest.main()

@@ -43,7 +43,6 @@ class MockFetcher(Fetcher):
     def do_search(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
         count = int(kwargs.get('count', 10))
-        
         # How many results should we return?
         num_results = min(
             self.fake_total_results - start_index, count
@@ -74,10 +73,9 @@ class MockFetcher(Fetcher):
     def do_all_subjects(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
         count = int(kwargs.get('count', 10))
-        
         # How many results should we return?
         num_results = min(
-            self.fake_total_results - (start_index * count), count
+            self.fake_total_results - start_index, count
         )
         
         return {
