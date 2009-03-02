@@ -1,86 +1,105 @@
-import simplejson, urllib, urlparse
+try:
+    import simplejson
+except ImportError:
+    from django.utils import simplejson
+import urllib, urlparse
+import fetchers
 
-def jsonpath_tiny(json, path):
-    # A subset of http://goessner.net/articles/JsonPath/
-    if not path.startswith('$.'):
-        raise TypeError, 'JSONPath must start with $.'
-    for bit in path[2:].split('.'):
-        json = json[bit]
-    return json
+class APIKeyError(Exception):
+    def __init__(self, api_key, e):
+        self.api_key = api_key
+        self.wrapped_exception = e
+    
+    def __repr__(self):
+        return '<APIKeyError: %s is a bad API key>' % self.api_key
 
-class Result(object):
-    def __init__(self, client, url, json, jsonpath):
+class Client(object):
+    base_url = 'http://api.guardianapis.com/'
+    
+    def __init__(self, api_key, fetcher=None):
+        self.api_key = api_key
+        self.fetcher = fetcher or fetchers.best_fetcher()
+    
+    def _do_call(self, endpoint, **kwargs):
+        url = '%s?%s' % (
+            urlparse.urljoin(self.base_url, endpoint),
+            urllib.urlencode(self.fix_kwargs(kwargs), doseq=True)
+        )
+        try:
+            headers, response = self.fetcher.get(url)
+        except fetchers.HTTPError, e:
+            if e.code == 403:
+                raise APIKeyError(self.api_key, e)
+            else:
+                raise
+        return simplejson.loads(response)
+    
+    def fix_kwargs(self, kwargs):
+        kwargs2 = dict(kwargs)
+        kwargs2['format'] = 'json'
+        kwargs2['api_key'] = self.api_key
+        return kwargs2
+    
+    def search(self, **kwargs):
+        json = self._do_call('/content/search', **kwargs)
+        return SearchResults(self, kwargs, json)
+    
+    def tags(self, **kwargs):
+        json = self._do_call('/content/all-subjects', **kwargs)
+        return TagResults(self, kwargs, json)
+    
+    def content(self, content_id):
+        json = self._do_call('/content/content/%s' % content_id)
+        return json
+    
+class Results(object):
+    def __init__(self, client, kwargs, json):
         self.client = client
-        self.url = url
+        self.kwargs = kwargs
         self.json = json
-        self.jsonpath = jsonpath
+    
+    def all(self, sleep=1):
+        return AllResults(self, sleep)
     
     def __getitem__(self, key):
         return self.json[key]
     
+    def results(self):
+        return []
+    
     def __iter__(self):
-        for result in jsonpath_tiny(self.json, self.jsonpath):
+        for result in self.results():
             yield result
 
-class Client(object):
-    def __init__(self, fp):
-        json = simplejson.load(fp)
-        self.endpoints = json['endpoints']
-        self.base_url = json['base_url']
-        # Create the methods
-        for id, endpoint in self.endpoints.items():
-            setattr(self, id, self.make_method(id, endpoint))
+
+class SearchResults(Results):
     
-    def fetch_url(self, url, definition):
-        json = simplejson.load(urllib.urlopen(url))
-        return Result(self, url, json, definition['results'])
+    def results(self):
+        return self.json['search']['results']
     
-    def make_method(self, id, json):
-        params = json.get('params', {})
-        endpoint_url = urlparse.urljoin(self.base_url, json['url'])
-        def method(**args):
-            args = dict([self.transform_arg(k, v) for k, v in args.items()])
-            # Check for required arguments
-            required = [
-                key for key, value in params.items() if value.get('required')
-            ]
-            missing = [a for a in required if a not in args]
-            if missing:
-                raise TypeError, (
-                    'Missing required arguments: %s' % ', '.join(missing)
-                )
-            # Check for unrecognised arguments
-            unrecognised = [
-                a for a in args if a not in params
-            ]
-            if unrecognised:
-                raise TypeError, (
-                    'Unrecognised arguments: %s' % ', '.join(unrecognised)
-                )
-            # Construct URL
-            url = endpoint_url
-            
-            args['format'] = 'json'
-            if args:
-                url += '?' + urllib.urlencode(args)
-            
-            return self.fetch_url(url, json)
+    def filters(self):
+        return self.json['search']['filters']
+
+class TagResults(Results):
+    
+    def results(self):
+        return self.json['com.gu.gdn.api.model.TagList']['tags']
+
+
+class AllResults(object):
+    "Results wrapper that knows how to auto-paginate a result set"
+    def __init__(self, results, sleep=1):
+        self.results = results
+        self.client = results.client
+        self.sleep = sleep
+
+    def __iter__(self):
+        # TODO: Implement this method properly
+        current_index = 0
+        total_fetched = 0
         
-        method.__name__ = id
-        method.__doc__ = json.get('description', '')
-        return method
-    
-    def transform_arg(self, key, value):
-        return key, value
-
-class TestableClient(Client):
-    def fetch_url(self, url):
-        return url
-
-class GuardianContent(Client):
-    
-    def __init__(self):
-        super(GuardianContent, self).__init__(open('index.json'))
-    
-    def transform_arg(self, key, value):
-        return key.replace('_', '-'), value
+        results = self.results
+        kwargs = dict(results.kwargs)
+        
+        for result in results:
+            yield result
