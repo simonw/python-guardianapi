@@ -117,6 +117,22 @@ class ClientTestCase(BaseTestCase):
         all_tags = list(results.all(sleep = 0))
         self.assertRequestCount(4)
         self.assertEqual(len(all_tags), 301)
-        
+    
+    def test_request_search(self):
+        "client.request(url-to-search-results) should work correctly"
+        url = 'http://gdn/content/search?q=obama'
+        self.assertRequestCount(0)
+        results = self.client.request(url)
+        self.assertRequestCount(1)
+        self.assert_(isinstance(results, client.SearchResults))
+    
+    def test_request_content(self):
+        "client.fetch(url-to-content) should work correctly"
+        url = 'http://gdn/content/content/123'
+        self.assertRequestCount(0)
+        results = self.client.request(url)
+        self.assertRequestCount(1)
+        self.assert_(isinstance(results, dict))
+
 if __name__ == '__main__':
     unittest.main()

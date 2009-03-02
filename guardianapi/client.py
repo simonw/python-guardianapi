@@ -15,6 +15,12 @@ class APIKeyError(Exception):
 
 class Client(object):
     base_url = 'http://api.guardianapis.com/'
+    # Map paths (e.g. /content/search) to their corresponding methods:
+    path_method_lookup = (
+        (re.compile('^/content/search$'), 'search'),
+        (re.compile('^/content/all-subjects$'), 'tags'),
+        (re.compile('^/content/(\d+)$'), 'content'),
+    )
     
     def __init__(self, api_key, fetcher=None):
         self.api_key = api_key
@@ -55,6 +61,10 @@ class Client(object):
         json = self._do_call('/content/content/%s' % content_id)
         return json
     
+    def request(self, url):
+        "Execute a method where the URL is already constructed e.g. a gdnUrl"
+        return url
+
 class Results(object):
     client_method = None
     default_per_page = 10 # Client library currently needs to know this
