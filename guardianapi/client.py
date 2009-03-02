@@ -2,7 +2,7 @@ try:
     import simplejson
 except ImportError:
     from django.utils import simplejson
-import urllib, urlparse
+import urllib, urlparse, time
 import fetchers
 
 class APIKeyError(Exception):
@@ -35,7 +35,10 @@ class Client(object):
         return simplejson.loads(response)
     
     def fix_kwargs(self, kwargs):
-        kwargs2 = dict(kwargs)
+        kwargs2 = dict([ # underscores become hyphens
+            (key.replace('_', '-'), value)
+            for key, value in kwargs.items()
+        ])
         kwargs2['format'] = 'json'
         kwargs2['api_key'] = self.api_key
         return kwargs2
@@ -53,13 +56,23 @@ class Client(object):
         return json
     
 class Results(object):
+    client_method = None
+    default_per_page = 10 # Client library currently needs to know this
+    
     def __init__(self, client, kwargs, json):
         self.client = client
         self.kwargs = kwargs
         self.json = json
     
     def all(self, sleep=1):
+        "Iterate over all results, handling pagination transparently"
         return AllResults(self, sleep)
+    
+    def count(self):
+        return 0
+    
+    def start_index(self):
+        return 0
     
     def __getitem__(self, key):
         return self.json[key]
@@ -67,12 +80,37 @@ class Results(object):
     def results(self):
         return []
     
+    def has_next(self):
+        max_index = self.count() - 1
+        max_in_current = self.start_index() + len(self.results())
+        return max_in_current < max_index
+    
+    def next(self):
+        "Return next Results object in pagination sequence, or None if at end"
+        if not self.has_next():
+            return None
+        method = getattr(self.client, self.client_method)
+        kwargs = dict(self.kwargs)
+        start_index = kwargs.get('start_index', 0)
+        count = kwargs.get('count', self.default_per_page)
+        # Adjust the pagination arguments
+        kwargs['count'] = count
+        kwargs['start_index'] = start_index + count
+        return method(**kwargs)
+    
     def __iter__(self):
         for result in self.results():
             yield result
 
-
 class SearchResults(Results):
+    client_method = 'search'
+    default_per_page = 10
+    
+    def count(self):
+        return self.json['search']['count']
+    
+    def start_index(self):
+        return self.json['search']['startIndex']
     
     def results(self):
         return self.json['search']['results']
@@ -81,25 +119,28 @@ class SearchResults(Results):
         return self.json['search']['filters']
 
 class TagResults(Results):
+    client_method = 'tags'
+    default_per_page = 10
+    
+    def count(self):
+        return self.json['com.gu.gdn.api.model.TagList']['count']
+    
+    def start_index(self):
+        return self.json['com.gu.gdn.api.model.TagList']['startIndex']
     
     def results(self):
         return self.json['com.gu.gdn.api.model.TagList']['tags']
-
 
 class AllResults(object):
     "Results wrapper that knows how to auto-paginate a result set"
     def __init__(self, results, sleep=1):
         self.results = results
-        self.client = results.client
         self.sleep = sleep
-
+    
     def __iter__(self):
-        # TODO: Implement this method properly
-        current_index = 0
-        total_fetched = 0
-        
         results = self.results
-        kwargs = dict(results.kwargs)
-        
-        for result in results:
-            yield result
+        while results:
+            for result in results.results():
+                yield result
+            time.sleep(self.sleep)
+            results = results.next()

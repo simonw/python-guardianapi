@@ -26,24 +26,28 @@ class MockFetcher(Fetcher):
         method = getattr(self, 'do_%s' % endpoint.replace('-', '_'))
         json = method(**args)
         
-        self.record(url, args)
+        self.record(url, args, json)
         
         return {}, simplejson.dumps(json, indent=4)
     
-    def record(self, url, args):
+    def record(self, url, args, json):
         "Record attempted URL fetches so we can run assertions against them"
-        print 
         print '     ', url
         print '     ', args
+        try:
+            print '      Got %s results' % len(json['search']['results'])
+        except KeyError:
+            pass
+        
         self.fetched.append((url, args))
     
     def do_search(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
-        count = int(kwargs.get('count', 20))
+        count = int(kwargs.get('count', 10))
         
         # How many results should we return?
         num_results = min(
-            self.fake_total_results - (start_index * count), count
+            self.fake_total_results - (start_index + count), count
         )
         
         return {
@@ -70,7 +74,7 @@ class MockFetcher(Fetcher):
     
     def do_all_subjects(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
-        count = int(kwargs.get('count', 20))
+        count = int(kwargs.get('count', 10))
         
         # How many results should we return?
         num_results = min(
