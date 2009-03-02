@@ -1,11 +1,3 @@
-def jsonpath(json, path):
-    # A subset of http://goessner.net/articles/JsonPath/
-    if not path.startswith('$.'):
-        raise TypeError, 'JSONPath must start with $.'
-    for bit in path[2:].split('.'):
-        json = json[bit]
-    return json
-
 # Syntactic sugar enabling classes
 class AttrDictList(list):
     def transform(self, value):
