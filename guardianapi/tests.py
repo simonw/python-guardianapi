@@ -1,7 +1,7 @@
 import client, mockapi
 import unittest
 
-class SearchTestCase(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     api_key = 'fake-api-key'
     
     def setUp(self):
@@ -26,6 +26,8 @@ class SearchTestCase(unittest.TestCase):
             needle, haystack
         ))
     
+class MockFetcherTestCase(BaseTestCase):
+    
     def test_mock_fetcher(self):
         "MockFetcher should intercept and record URL retrieval attempts"
         search_term = 'hello'
@@ -43,6 +45,8 @@ class SearchTestCase(unittest.TestCase):
         self.assertEqual(results.count(), 101)
         self.assertRequestCount(1)
         self.assertEqual(len(results.results()), 11)
+
+class ClientTestCase(BaseTestCase):
     
     def test_results_has_next(self):
         "results.has_next() should give the correct answers"
