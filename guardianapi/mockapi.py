@@ -11,6 +11,7 @@ class MockFetcher(Fetcher):
     
     def reset(self):
         self.fetched = [] # (url, kwargs-dict) pairs
+        self.fake_total_results = 101
     
     def get(self, url):
         bits = urlparse.urlparse(url)
@@ -31,18 +32,29 @@ class MockFetcher(Fetcher):
     
     def record(self, url, args):
         "Record attempted URL fetches so we can run assertions against them"
+        print 
+        print '     ', url
+        print '     ', args
         self.fetched.append((url, args))
     
     def do_search(self, **kwargs):
-        start_index = kwargs.get('start-index', 0)
-        count = kwargs.get('count', 20)
+        start_index = int(kwargs.get('start-index', 0))
+        count = int(kwargs.get('count', 20))
+        
+        # How many results should we return?
+        num_results = min(
+            self.fake_total_results - (start_index * count), count
+        )
+        
         return {
             "search": {
-                "count": 101,
+                "count": self.fake_total_results,
                 "startIndex": start_index,
                 "results": [
                     self.fake_article(article_id) 
-                    for article_id in range(start_index, start_index + count)
+                    for article_id in range(
+                        start_index, start_index + num_results
+                    )
                 ],
                 "filters": [{
                     "name": "Article",
@@ -53,6 +65,29 @@ class MockFetcher(Fetcher):
                     "count": 989610,
                     "filterUrl": "http://mockgdnapi/content/search?format=json&filter=/global/article"
                 } for i in range(4)]
+            }
+        }
+    
+    def do_all_subjects(self, **kwargs):
+        start_index = int(kwargs.get('start-index', 0))
+        count = int(kwargs.get('count', 20))
+        
+        # How many results should we return?
+        num_results = min(
+            self.fake_total_results - (start_index * count), count
+        )
+        
+        return {
+            "com.gu.gdn.api.model.TagList": {
+                "count": self.fake_total_results,
+                "startIndex": start_index,
+                "tags": [{
+                    "name": "Tag %s" % i,
+                    "section": "Tags",
+                    "filter": "/tag/%s" % i,
+                    "gdnUrl": "http://mockgdnapi/content/search?filter=/tag/%s" % i,
+                    "webUrl": "http://www.guardian.co.uk/faketag/%s" % i
+                } for i in range(start_index, start_index + num_results)],
             }
         }
     
