@@ -2,7 +2,7 @@ try:
     import simplejson
 except ImportError:
     from django.utils import simplejson
-import urllib, urlparse, time
+import urllib, urlparse, time, re
 import fetchers
 
 class APIKeyError(Exception):
