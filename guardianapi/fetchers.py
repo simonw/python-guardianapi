@@ -1,16 +1,22 @@
 import urllib2
+try:
+    import httplib2
+except ImportError:
+    httplib2 = None
 
 def best_fetcher():
-    try:
-        import httplib2
+    if httplib2:
         return CachedFetcher()
-    except ImportError:
+    else:
         return Fetcher()
 
 class HTTPError(Exception):
     def __init__(self, status_code, info=None):
         self.status_code = status_code
         self.info = info
+    
+    def __repr__(self):
+        return 'HTTPError: %s' % self.status_code
 
 class Fetcher(object):
     "Default implementation, using urllib2"
@@ -25,7 +31,6 @@ class Fetcher(object):
 class CachedFetcher(object):
     "Requires httplib2"
     def __init__(self, cache=None):
-        import httplib2
         if cache is None:
             cache = CachedFetcher._Cache()
         self.http = httplib2.Http(cache)
