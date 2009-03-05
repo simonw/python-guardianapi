@@ -3,22 +3,8 @@ try:
 except ImportError:
     from django.utils import simplejson
 import urllib, urlparse, time, re, cgi
+from errors import APIKeyError, ItemNotFound, URLNotRecognised
 import fetchers
-
-class APIKeyError(Exception):
-    def __init__(self, api_key, e):
-        self.api_key = api_key
-        self.wrapped_exception = e
-    
-    def __repr__(self):
-        return '<APIKeyError: %s is a bad API key>' % self.api_key
-
-class URLNotRecognised(Exception):
-    def __init__(self, url):
-        self.url = url
-    
-    def __repr__(self):
-        return '<URLNotRecognised: %s>' % self.url
 
 class Client(object):
     base_url = 'http://api.guardianapis.com/'
@@ -64,9 +50,15 @@ class Client(object):
         json = self._do_call('/content/tags', **kwargs)
         return TagResults(self, kwargs, json)
     
-    def item(self, content_id):
-        json = self._do_call('/content/item/%s' % content_id)
-        return json
+    def item(self, item_id):
+        try:
+            json = self._do_call('/content/item/%s' % item_id)
+        except HTTPError, h:
+            if str(h.status_code) == '404':
+                raise ItemNotFound(item_id)
+            else:
+                raise
+        return json['content']
     
     def request(self, url):
         "Execute a method where the URL is already constructed e.g. a gdnUrl"

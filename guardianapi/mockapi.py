@@ -100,7 +100,7 @@ class MockFetcher(Fetcher):
         }
     
     def do_item(self, rest_of_url, **kwargs):
-        return self.fake_article(rest_of_url.replace('/', ''))
+        return {'content': self.fake_article(rest_of_url.replace('/', ''))}
     
     def fake_article(self, article_id):
         return {
