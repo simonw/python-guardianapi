@@ -25,8 +25,8 @@ class Client(object):
     # Map paths (e.g. /content/search) to their corresponding methods:
     path_method_lookup = (
         (re.compile('^/content/search$'), 'search'),
-        (re.compile('^/content/all-subjects$'), 'tags'),
-        (re.compile('^/content/content/(\d+)$'), 'content'),
+        (re.compile('^/content/tags$'), 'tags'),
+        (re.compile('^/content/item/(\d+)$'), 'item'),
     )
     
     def __init__(self, api_key, fetcher=None):
@@ -41,7 +41,7 @@ class Client(object):
         try:
             headers, response = self.fetcher.get(url)
         except fetchers.HTTPError, e:
-            if e.code == 403:
+            if e.status_code == 403:
                 raise APIKeyError(self.api_key, e)
             else:
                 raise
@@ -61,11 +61,11 @@ class Client(object):
         return SearchResults(self, kwargs, json)
     
     def tags(self, **kwargs):
-        json = self._do_call('/content/all-subjects', **kwargs)
+        json = self._do_call('/content/tags', **kwargs)
         return TagResults(self, kwargs, json)
     
-    def content(self, content_id):
-        json = self._do_call('/content/content/%s' % content_id)
+    def item(self, content_id):
+        json = self._do_call('/content/item/%s' % content_id)
         return json
     
     def request(self, url):

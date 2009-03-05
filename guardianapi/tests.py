@@ -87,7 +87,7 @@ class ClientTestCase(BaseTestCase):
         self.assertRequestCount(0)
         results = self.client.tags(count = 20)
         self.assertRequestCount(1)
-        self.assertIn('all-subjects', self.fetcher.fetched[-1][0])
+        self.assertIn('tags', self.fetcher.fetched[-1][0])
         self.assertEqual(len(list(results)), 20)
     
     def test_search(self):
@@ -129,7 +129,7 @@ class ClientTestCase(BaseTestCase):
     
     def test_request_content(self):
         "client.fetch(url-to-content) should work correctly"
-        url = 'http://gdn/content/content/123'
+        url = 'http://gdn/content/item/123'
         self.assertRequestCount(0)
         results = self.client.request(url)
         self.assertRequestCount(1)

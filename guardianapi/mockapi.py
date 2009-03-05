@@ -17,10 +17,10 @@ class MockFetcher(Fetcher):
         bits = urlparse.urlparse(url)
         endpoint = bits.path.split('/')[-1]
         args = tuple()
-        if endpoint not in ('search', 'all-subjects'):
-            if bits.path.startswith('/content/content'):
+        if endpoint not in ('search', 'tags'):
+            if bits.path.startswith('/content/item'):
                 args = (endpoint,)
-                endpoint = 'content'
+                endpoint = 'item'
             else:
                 assert False, 'Unrecognised URL: %s' % url
         
@@ -30,7 +30,7 @@ class MockFetcher(Fetcher):
             if isinstance(kwargs[key], list) and len(kwargs[key]) == 1:
                 kwargs[key] = kwargs[key][0]
         
-        method = getattr(self, 'do_%s' % endpoint.replace('-', '_'))
+        method = getattr(self, 'do_%s' % endpoint)
         json = method(*args, **kwargs)
         
         self.record(url, kwargs, json)
@@ -77,7 +77,7 @@ class MockFetcher(Fetcher):
             }
         }
     
-    def do_all_subjects(self, **kwargs):
+    def do_tags(self, **kwargs):
         start_index = int(kwargs.get('start-index', 0))
         count = int(kwargs.get('count', 10))
         # How many results should we return?
@@ -99,7 +99,7 @@ class MockFetcher(Fetcher):
             }
         }
     
-    def do_content(self, rest_of_url, **kwargs):
+    def do_item(self, rest_of_url, **kwargs):
         return self.fake_article(rest_of_url.replace('/', ''))
     
     def fake_article(self, article_id):
@@ -114,7 +114,7 @@ class MockFetcher(Fetcher):
             "trailText": "Mock trailText %s" % article_id,
             "linkText": "Mock linkText %s" % article_id,
             "webUrl": "http://www.guardian.co.uk/fake-url/%s" % article_id,
-            "gdnUrl": "http://mockgdnapi/content/content/%s" % article_id,
+            "gdnUrl": "http://mockgdnapi/content/item/%s" % article_id,
             "publicationDate": "2009-03-01T00:00:00",
             "typeSpecific": {
                 "@class": "article",
