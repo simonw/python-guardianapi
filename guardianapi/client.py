@@ -61,7 +61,7 @@ class Client(object):
         return json['content']
     
     def request(self, url):
-        "Execute a method where the URL is already constructed e.g. a gdnUrl"
+        "Start with an already constructed URL e.g. apiUrl from a response"
         bits = urlparse.urlparse(url)
         path = bits.path
         kwargs = cgi.parse_qs(bits.query)

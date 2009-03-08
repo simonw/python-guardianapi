@@ -69,7 +69,7 @@ class MockFetcher(Fetcher):
                     "name": "Article",
                     "type": "content-type",
                     "filter": "/global/article",
-                    "gdnUrl": "http://mockgdnapi/content/search?filter=/global/article",
+                    "apiUrl": "http://mockgdnapi/content/search?filter=/global/article",
                     "webUrl": "http://www.guardian.co.uk/global/article",
                     "count": 989610,
                     "filterUrl": "http://mockgdnapi/content/search?format=json&filter=/global/article"
@@ -93,7 +93,7 @@ class MockFetcher(Fetcher):
                     "name": "Tag %s" % i,
                     "section": "Tags",
                     "filter": "/tag/%s" % i,
-                    "gdnUrl": "http://mockgdnapi/content/search?filter=/tag/%s" % i,
+                    "apiUrl": "http://mockgdnapi/content/search?filter=/tag/%s" % i,
                     "webUrl": "http://www.guardian.co.uk/faketag/%s" % i
                 } for i in range(start_index, start_index + num_results)],
             }
@@ -114,7 +114,7 @@ class MockFetcher(Fetcher):
             "trailText": "Mock trailText %s" % article_id,
             "linkText": "Mock linkText %s" % article_id,
             "webUrl": "http://www.guardian.co.uk/fake-url/%s" % article_id,
-            "gdnUrl": "http://mockgdnapi/content/item/%s" % article_id,
+            "apiUrl": "http://mockgdnapi/content/item/%s" % article_id,
             "publicationDate": "2009-03-01T00:00:00",
             "typeSpecific": {
                 "@class": "article",
@@ -128,7 +128,7 @@ class MockFetcher(Fetcher):
             "name": "Article",
             "type": "content-type",
             "filter": "/global/article",
-            "gdnUrl": "http://mockgdnapi/content/search?filter=/global/article",
+            "apiUrl": "http://mockgdnapi/content/search?filter=/global/article",
             "webUrl": "http://www.guardian.co.uk/global/article"
         } for i in range(4)]
 
