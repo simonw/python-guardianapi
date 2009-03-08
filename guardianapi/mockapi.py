@@ -86,7 +86,7 @@ class MockFetcher(Fetcher):
         )
         
         return {
-            "com.gu.gdn.api.model.TagList": {
+            "subjects": {
                 "count": self.fake_total_results,
                 "startIndex": start_index,
                 "tags": [{

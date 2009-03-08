@@ -145,13 +145,13 @@ class TagResults(Results):
     default_per_page = 10
     
     def count(self):
-        return self.json['com.gu.gdn.api.model.TagList']['count']
+        return self.json['subjects']['count']
     
     def start_index(self):
-        return self.json['com.gu.gdn.api.model.TagList']['startIndex']
+        return self.json['subjects']['startIndex']
     
     def results(self):
-        return self.json['com.gu.gdn.api.model.TagList']['tags']
+        return self.json['subjects']['tags']
 
 class AllResults(object):
     "Results wrapper that knows how to auto-paginate a result set"
