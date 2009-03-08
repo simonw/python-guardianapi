@@ -75,6 +75,9 @@ class Client(object):
         if not found_method:
             raise URLNotRecognised(url)
         return getattr(self, found_method)(*args, **kwargs)
+    
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.base_url)
 
 class Results(object):
     client_method = None
@@ -123,6 +126,13 @@ class Results(object):
     def __iter__(self):
         for result in self.results():
             yield result
+    
+    def __repr__(self):
+        return '<%s: %d-%d/%d for %r>' % (
+            self.__class__.__name__,
+            self.start_index(), self.start_index() + len(self.results()), 
+            self.count(), self.kwargs
+        )
 
 class SearchResults(Results):
     client_method = 'search'
@@ -166,3 +176,8 @@ class AllResults(object):
                 yield result
             time.sleep(self.sleep)
             results = results.next()
+    
+    def __repr__(self):
+        return '<%s: %d for %r>' % (
+            self.__class__.__name__, self.results.count(), self.results.kwargs
+        )
