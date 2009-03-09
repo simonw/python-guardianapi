@@ -88,6 +88,9 @@ class Results(object):
         self.kwargs = kwargs
         self.json = json
     
+    def __iter__(self):
+        return self.results()
+    
     def all(self, sleep=1):
         "Iterate over all results, handling pagination transparently"
         return AllResults(self, sleep)

@@ -6,7 +6,7 @@ Usage
 >>> results = client.search(q = 'ocelots')
 >>> results.count()
 36
->>> for item in results.results():
+>>> for item in results:
 ...     print item['headline']
 
 This will return the first ten results. To retrieve everything (by 
