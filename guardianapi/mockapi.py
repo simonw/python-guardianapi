@@ -11,7 +11,7 @@ class MockFetcher(Fetcher):
     
     def reset(self):
         self.fetched = [] # (url, kwargs-dict) pairs
-        self.fake_total_results = 101
+        self.fake_total_results = 51
     
     def get(self, url):
         bits = urlparse.urlparse(url)

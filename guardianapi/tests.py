@@ -109,14 +109,14 @@ class ClientTestCase(BaseTestCase):
     
     def test_all_tags(self):
         "tags().all() should magically paginate"
-        self.fetcher.fake_total_results = 301
+        self.fetcher.fake_total_results = 151
         self.assertRequestCount(0)
-        results = self.client.tags(count = 100)
+        results = self.client.tags(count = 50)
         self.assertRequestCount(1)
-        self.assertEqual(len(results.results()), 100)
+        self.assertEqual(len(results.results()), 50)
         all_tags = list(results.all(sleep = 0))
         self.assertRequestCount(4)
-        self.assertEqual(len(all_tags), 301)
+        self.assertEqual(len(all_tags), 151)
     
     def test_request_search(self):
         "client.request(url-to-search-results) should work correctly"
